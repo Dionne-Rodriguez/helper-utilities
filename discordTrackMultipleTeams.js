@@ -37,7 +37,7 @@ import puppeteer from 'puppeteer'
 
     async function getUpdatedSquadronStats() {
         const browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             executablePath: process.env.WINDOWSCHROMEEXE
         })
 
