@@ -3,15 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "script": "node ./Speed-Warning.js"
+    "script": "node ./Speed-Warning.js",
+    "SQBTracker": "node ./trackSQBGames.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "node-cron": "^3.0.2",
     "puppeteer": "^19.4.1"
   }
 }

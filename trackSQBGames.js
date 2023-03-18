@@ -1,26 +1,23 @@
-// import sendMessage from "./CopeDiscordBot.js"
+import sendMessage from "./CopeDiscordBot.js"
 import puppeteer from 'puppeteer'
 
 
 (async () => {
-
   const browser = await puppeteer.launch({
     headless: false,
-    executablePath: process.env.WINDOWSCHROMEEXE
-
+    executablePath: process.env.WINDOWSCHROMEEXE,
+    devtools: true
   });
+
   const page = await browser.newPage();
-  const rareClanInfoPage = 'https://warthunder.com/en/community/claninfo/COPE'
+  const rareClanInfoPage = 'https://warthunder.com/en/community/claninfo/COPE--Fight%204%20Whats%20Right%20or%20Die'
   const wtLocalPage = 'http://127.0.0.1:8111/'
-  const initialSquadronPoints = await getCurrentSquadronRating()
-  await page.goto(wtLocalPage);
-  await startGameTracker(page, initialSquadronPoints)
+  const scoreBoard = { win: 0, loss: 0 }
 
   const getCurrentSquadronRating = async () => {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       executablePath: process.env.WINDOWSCHROMEEXE
-
     });
     const page = await browser.newPage();
     await page.goto(rareClanInfoPage)
@@ -29,13 +26,35 @@ import puppeteer from 'puppeteer'
     })
   }
 
+  //log current game should be called within the browser and call to get the current points and compare the
+  const logCurrentGame = async (initialPoints) => {
+    // const browser = await puppeteer.launch({
+    //   headless: true,
+    //   executablePath: process.env.WINDOWSCHROMEEXE
+    // });
+    // const page = await browser.newPage();
+    // await page.goto(rareClanInfoPage)
+    console.log(initialPoints, "initial points from the log current game")
+    // return await page.evaluate(() => {
+    //   return parseInt(document.querySelector(".squadrons-counter__value").innerHTML.trim())
+    // })
+  }
 
 
-  async function startGameTracker(page, initialSquadronPoints, getCurrentSquadronRating) {
+  var initialSquadronPoints = await getCurrentSquadronRating()
+  await page.exposeFunction("sendMessage", sendMessage)
+  await page.exposeFunction("getCurrentSquadronRating", getCurrentSquadronRating)
+  await page.exposeFunction("logCurrentSquadron", logCurrentGame)
+  await page.goto(wtLocalPage);
+
+
+  await startGameTracker(page, initialSquadronPoints, scoreBoard)
+
+  async function startGameTracker(page, initialSquadronPoints, scoreBoard) {
     await page.waitForSelector('#textlines')
     const target = await page.$('#textlines')
     const initialPoints = initialSquadronPoints
-    await page.evaluate((target, initialPoints, getCurrentSquadronRating) => {
+    await page.evaluate((target, initialPoints, scoreBoard) => {
       function stringToNumber(str) {
         // Split the string into two parts using the ":" separator
         const parts = str.split(":");
@@ -47,16 +66,33 @@ import puppeteer from 'puppeteer'
         // Join the parts together and return the result as a number
         return Number(`${hours}${minutes}`);
       }
-
       const observer = new MutationObserver(async mutations => {
         for await (const mutation of mutations) {
           const oldTimeStamp = stringToNumber(document.querySelector("#textlines > div:nth-last-child(2) > span").innerHTML)
           const recentlyAddedTimeStamp = stringToNumber(document.querySelector("#textlines > div:last-child > span").innerHTML)
           if (recentlyAddedTimeStamp < oldTimeStamp) {
-            const getCurrentSquadronRating = getCurrentSquadronRating
-            const getSquadronPoints = await getCurrentSquadronRating();
-            console.log(initialPoints, getSquadronPoints);
 
+            console.log(recentlyAddedTimeStamp, oldTimeStamp);
+            var currentSquadronPoints = await window.getCurrentSquadronRating();
+            console.log(initialPoints, await window.getCurrentSquadronRating());
+            var pointDifferential = Math.abs(initialPoints - currentSquadronPoints)
+            if (currentSquadronPoints > initialPoints) {
+              console.log("win");
+              scoreBoard.win += 1
+              initialPoints += pointDifferential
+              sendMessage(`WIN ${scoreBoard.win} - ${scoreBoard.loss} (+${pointDifferential})`)
+            }
+            if (currentSquadronPoints == initialPoints) {
+              //check length of chat array less than 2 means start of game
+              //will avoud networks calls
+              console.log("misfire")
+            }
+            if (currentSquadronPoints < initialPoints) {
+              console.log("loss");
+              scoreBoard.loss += 1
+              initialPoints -= pointDifferential
+              sendMessage(`LOSS ${scoreBoard.win} - ${scoreBoard.loss} (-${pointDifferential})`)
+            }
             console.log("new game initiated new chat session started");
           }
         }
@@ -65,51 +101,6 @@ import puppeteer from 'puppeteer'
       var config1 = { characterData: false, attributes: false, childList: true, subtree: false };
       var config = { characterData: true, attributes: false, childList: false, subtree: true };
       observer.observe(target, config1);
-
-    }, target, initialPoints, getCurrentSquadronRating)
+    }, target, initialPoints, scoreBoard)
   }
-
-
-
-  async function getSquadronRating(page) {
-    const target = await page.$('.squadrons-counter__value');
-    await page.evaluate((target) => {
-      const oldValue = parseInt(target.textContent.replace(/\D+/g, ''));
-      console.log(oldValue, "old val");
-      const observer = new MutationObserver(async mutations => {
-        for await (const mutation of mutations) {
-          const newValue = parseInt(mutation.target.textContent.replace(/\D+/g, ''));
-          // const newValue = parseInt(target.textContent.replace(/\D+/g, ''));
-          // console.log(newValue, "new val");
-          console.log(newValue, "new val");
-          if (newValue > oldValue) {
-            console.log("win");
-          } else {
-            console.log("loss");
-          }
-        }
-      });
-      console.log(target, "target")
-      var config = { characterData: true, attributes: false, childList: false, subtree: true };
-      observer.observe(target, config);
-
-
-
-    }, target)
-  }
-
-
-
-
-
-
 })();
-
-
-
-//PRESS A BUTTON REFRESHES THE WT SITE
-//WE GET THE CURRENT VAL.. OLD VAL SHOULD BE STORED ALREADY
-//STORE THE WIN OR LOSS IN ITS STATE VAR AND SEND TO DISCORD
-
-
-//when battle chat or mission chat start at 0 time call the wt site to get the current val and compare to old value
