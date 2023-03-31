@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "script": "node ./Speed-Warning.js",
-    "SQBTracker": "node ./trackSQBGames.js"
+    "speed": "node ./Speed-Warning.js",
+    "localTracker": "node ./trackSQBGames.js",
+    "pointTracker":"caffeinate node ./discordTrackMultipleTeams.js",
+    "topTenTracker":"caffeinate node ./trackTopTen.js"
   },
   "author": "",
   "license": "ISC",
