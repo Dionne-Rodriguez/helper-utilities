@@ -229,6 +229,7 @@ const stopScraping = async () => {
 #${calculatedRank()} F4WRD 🇺🇸🦅
 Points: ${endSessionStats.squadronPoints} (<:smallgreenuptriangle:1083528485890445342> +${pointsGained})
 `);
+console.log("End of session message sent");
   }
   if (endSessionStats.squadronPoints < initialSessionStats.squadronPoints) {
     var calculatedRank = () => {
@@ -247,35 +248,28 @@ Points: ${endSessionStats.squadronPoints} (<:smallgreenuptriangle:10835284858904
     #${calculatedRank()} F4WRD 🇺🇸🦅
     Points: ${squadronPoints} (:small_red_triangle_down: -${pointsLost})
     `);
+    console.log("End of session message sent");
   }
   console.log("Stop scraping at:", new Date().toLocaleTimeString("en-US"));
 };
 
 // Schedule the cron job to start scraping at 10am EST every day
-cron.schedule("0 10 * * *", () => {
+cron.schedule("* 10 * * *", () => {
   startScraping();
 });
 
 // Schedule the cron job to stop scraping at 6pm EST every day
-cron.schedule("0 18 * * *", () => {
+cron.schedule("* 18 * * *", () => {
   stopScraping();
 });
 
 // Schedule the cron job to start scraping at 9pm EST every day
-cron.schedule("22 22 * * *", () => {
+cron.schedule("* 21 * * *", () => {
   startScraping();
 });
-startScraping();
 
 // Schedule the cron job to stop scraping at 2am EST every day
 cron.schedule("* 2 * * *", () => {
   stopScraping();
 });
 
-
-cron.schedule("5 15 * * *", () => {
-  startScraping();
-});
-// cron.schedule("45 20 * * *", () => {
-//   stopScraping();
-// });
