@@ -10,7 +10,17 @@ client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
-export default function sendMessage(message) {
+ function sendTopTenMessage(message) {
+    const channel = client.channels.cache.get(channelId);
+    const embed = new EmbedBuilder()
+    .setColor("#0099ff")
+    .setTitle("Squadron points changes deteced")
+    .setDescription(message);
+
+    channel.send({ embeds: [embed] });
+}
+
+function sendMessage(message) {
     const channel = client.channels.cache.get(channelId);
     const embed = new EmbedBuilder()
         .setTitle(message)
@@ -19,6 +29,8 @@ export default function sendMessage(message) {
 }
 
 client.login(token);
+
+export {sendTopTenMessage, sendMessage}
 
 
 //discordbot will wait once a team is created

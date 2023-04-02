@@ -1,4 +1,4 @@
-import sendMessage from "./CopeDiscordBot.js";
+import {sendMessage} from "./CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
@@ -213,6 +213,7 @@ Players: ${squadronPlayerCount}
 
 const stopScraping = async () => {
   clearInterval(intervalId);
+  console.log(endSessionStats.squadronPoints, initialSessionStats.squadronPoints);
   if(endSessionStats.squadronPoints > initialSessionStats.squadronPoints) {
     var calculatedRank = () => {
       if (endSessionStats.rank > initialSessionStats.rank) {
@@ -254,22 +255,23 @@ console.log("End of session message sent");
 };
 
 // Schedule the cron job to start scraping at 10am EST every day
-cron.schedule("* 10 * * *", () => {
+cron.schedule("0 10 * * *", () => {
   startScraping();
 });
 
 // Schedule the cron job to stop scraping at 6pm EST every day
-cron.schedule("* 18 * * *", () => {
+cron.schedule("0 18 * * *", () => {
   stopScraping();
 });
 
 // Schedule the cron job to start scraping at 9pm EST every day
-cron.schedule("* 21 * * *", () => {
+cron.schedule("0 21 * * *", () => {
   startScraping();
 });
 
 // Schedule the cron job to stop scraping at 2am EST every day
-cron.schedule("* 2 * * *", () => {
+cron.schedule("0 2 * * *", () => {
   stopScraping();
 });
+startScraping();
 

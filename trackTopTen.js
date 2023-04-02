@@ -1,4 +1,4 @@
-import sendMessage from "./CopeDiscordBot.js";
+import {sendTopTenMessage} from "./CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
@@ -89,32 +89,31 @@ const startScraping = async () => {
     console.log("Updated value:", topTenTeamPoints);
     await browser.close();
 
-    let changesMessage = "Squadron points changes detected:\n";
+    let changesMessage = "";
     let changesDetected = false
-    let rank = 1;
 
     for (const [teamName, initialPoints] of initialTopTenSquadPoints.entries()) {
         const updatedPoints = topTenTeamPoints.get(teamName);
         if (initialPoints !== updatedPoints) {
             changesDetected = true;
             const pointsDifference = updatedPoints - initialPoints;
-            const differenceSymbol = pointsDifference > 0 ? "+" : "";
-            changesMessage += `${teamName}: ${initialPoints} -> ${updatedPoints} (${differenceSymbol}${pointsDifference})\n`;
+            const differenceSymbol = pointsDifference > 0 ? "<:smallgreenuptriangle:1083528485890445342>" : ":small_red_triangle_down:";
+            changesMessage += `${teamName}: ${updatedPoints} (${differenceSymbol}${pointsDifference})\n`;
         }
     }
 
     if (changesDetected) {
-        sendMessage(changesMessage);
+        sendTopTenMessage(changesMessage);
     }
 
     normalizeUpdatedData();
 
     function normalizeUpdatedData() {
-    changesDetected = false
-      initialTopTenSquadPoints = topTenTeamPoints;
+        changesDetected = false
+        initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
-  intervalId = setInterval(getUpdatedSquadronStats, 7 * 60 * 1000);
+  intervalId = setInterval(getUpdatedSquadronStats, 10 * 60 * 1000);
 
   async function updateGlobalVariables() {
     initialTopTenSquadPoints = await initialTopTenSquadronPoints();
@@ -127,24 +126,19 @@ const stopScraping = async () => {
     console.log("Stop scraping at:", new Date().toLocaleTimeString("en-US"));
   };
 
-// Schedule the cron job to start scraping at 10am EST every day
-cron.schedule("* 10 * * *", () => {
-    startScraping();
-  });
+// Schedule the cron job to start and stop scraping
+cron.schedule("0 10,21 * * *", () => {
+  startScraping();
+});
+
+cron.schedule("0 18,2 * * *", () => {
+  stopScraping();
+});
+
+
+
+
+
+
   
-  // Schedule the cron job to stop scraping at 6pm EST every day
-  cron.schedule("* 18 * * *", () => {
-    stopScraping();
-  });
-  
-  // Schedule the cron job to start scraping at 9pm EST every day
-  cron.schedule("* 21 * * *", () => {
-    startScraping();
-  });
-  
-  // Schedule the cron job to stop scraping at 2am EST every day
-  cron.schedule("* 2 * * *", () => {
-    stopScraping();
-  });
-  
-  
+  startScraping();
