@@ -1,4 +1,4 @@
-import sendMessage from "./CopeDiscordBot.js"
+import sendMessage from "../discord/CopeDiscordBot.js"
 import puppeteer from 'puppeteer'
 
 

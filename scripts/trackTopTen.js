@@ -1,4 +1,4 @@
-import {sendTopTenMessage} from "./CopeDiscordBot.js";
+import {sendTopTenMessage} from "../discord/CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
@@ -23,9 +23,7 @@ const startScraping = async () => {
       var topTenTeams = [];
       for (let i = 1; i < 11; i++) {
         topTenTeams.push([
-          document
-            .querySelectorAll("tr")
-            [i].childNodes[1].innerText.split(" ")[0],
+          document.querySelectorAll("tr")[i].childNodes[0].innerText.split(" ")[0].concat(" ", document.querySelectorAll("tr")[i].childNodes[1].innerText.split(" ")[0]),
           document.querySelectorAll("tr")[i].childNodes[1].firstChild.href,
         ]);
       }
@@ -64,9 +62,7 @@ const startScraping = async () => {
       var topTenTeams = [];
       for (let i = 1; i < 11; i++) {
         topTenTeams.push([
-          document
-            .querySelectorAll("tr")
-            [i].childNodes[1].innerText.split(" ")[0],
+          document.querySelectorAll("tr")[i].childNodes[0].innerText.split(" ")[0].concat(" ", document.querySelectorAll("tr")[i].childNodes[1].innerText.split(" ")[0]),
           document.querySelectorAll("tr")[i].childNodes[1].firstChild.href,
         ]);
       }

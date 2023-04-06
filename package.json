@@ -8,8 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "speed": "node ./Speed-Warning.js",
     "localTracker": "node ./trackSQBGames.js",
-    "pointTracker":"caffeinate node ./discordTrackMultipleTeams.js",
-    "topTenTracker":"caffeinate node ./trackTopTen.js"
+    "pointTracker":"caffeinate node ./scripts/trackPrimary.js",
+    "topTenTracker":"caffeinate node ./scripts/trackTopTen.js",
+    "gameLogger":"caffeinate node ./scripts/gameLogger.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,4 +1,4 @@
-import {sendMessage} from "./CopeDiscordBot.js";
+import {sendMessage} from "../discord/CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
@@ -208,6 +208,7 @@ Players: ${squadronPlayerCount}
   async function updateGlobalVariables() {
     initialSessionStats = await getInitialSquadronData();
     endSessionStats = initialSessionStats;
+    console.log("UPDATING GLOBAL VARIABLES");
   }
 };
 
