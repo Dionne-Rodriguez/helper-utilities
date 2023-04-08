@@ -14,7 +14,7 @@ client.once(Events.ClientReady, c => {
     const channel = client.channels.cache.get(channelId);
     const embed = new EmbedBuilder()
     .setColor("#0099ff")
-    .setTitle("Squadron points changes deteced")
+    .setTitle("Squadron points changes detected")
     .setDescription(message);
 
     channel.send({ embeds: [embed] });
