@@ -137,4 +137,4 @@ cron.schedule("0 18,2 * * *", () => {
 
 
   
-  startScraping();
+  // startScraping();
