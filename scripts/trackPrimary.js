@@ -1,4 +1,4 @@
-import {sendMessage} from "../discord/CopeDiscordBot.js";
+import { sendMessage } from "../discord/CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
@@ -49,6 +49,32 @@ const startScraping = async () => {
       );
     });
 
+    var players = await page.evaluate(() => {
+      var filteredPlayers = [];
+      for (
+        let i = 0;
+        i < document.querySelectorAll(".squadrons-members__grid-item").length;
+        i++
+      ) {
+        if (
+          document.querySelectorAll(".squadrons-members__grid-item")[i]
+            .childNodes[1]
+        ) {
+          filteredPlayers.push([
+            document.querySelectorAll(".squadrons-members__grid-item")[i]
+              .childNodes[1].innerText,
+            parseInt(
+              document.querySelectorAll(".squadrons-members__grid-item")[i + 1]
+                .innerText
+            ),
+          ]);
+        }
+      }
+      console.log(filteredPlayers);
+      return filteredPlayers;
+    });
+    players = new Map(players);
+
     const deaths = await page.evaluate(() => {
       return parseInt(
         document
@@ -70,9 +96,15 @@ const startScraping = async () => {
       );
     });
     await browser.close();
-    return { kills, rank, deaths, squadronPlayerCount, squadronPoints };
+    return {
+      kills,
+      rank,
+      deaths,
+      squadronPlayerCount,
+      squadronPoints,
+      players,
+    };
   };
-
 
   await updateGlobalVariables();
   console.log("Initial value:", initialSessionStats);
@@ -122,6 +154,30 @@ const startScraping = async () => {
       );
     });
 
+    var players = await page.evaluate(() => {
+      var filteredPlayers = [];
+      for (
+        let i = 0;
+        i < document.querySelectorAll(".squadrons-members__grid-item").length;
+        i++
+      ) {
+        if (
+          document.querySelectorAll(".squadrons-members__grid-item")[i]
+            .childNodes[1]
+        ) {
+          filteredPlayers.push([
+            document.querySelectorAll(".squadrons-members__grid-item")[i]
+              .childNodes[1].innerText,
+            document.querySelectorAll(".squadrons-members__grid-item")[i + 1]
+              .innerText,
+          ]);
+        }
+      }
+      console.log(filteredPlayers);
+      return filteredPlayers;
+    });
+    players = new Map(players);
+
     var deaths = await page.evaluate(() => {
       return parseInt(
         document
@@ -149,35 +205,64 @@ const startScraping = async () => {
       deaths,
       squadronPlayerCount,
       rank,
+      players,
       new Date().toLocaleTimeString("en-US")
     );
     await browser.close();
 
+    var { kdRatio, calculatedRank, playersPointChange } = calculateStats();
     if (squadronPoints > initialSessionStats.squadronPoints) {
       var pointsGained = squadronPoints - initialSessionStats.squadronPoints;
-      var { killGain, deathGain, kdRatio, calculatedRank } = calculateStats();
-      sendMessage(`#${calculatedRank()} F4WRD 🇺🇸🦅
+      var embedObject = {
+        color: "#00FF00",
+        title: `#${calculatedRank()} F4WRD 🇺🇸🦅
 Points: ${squadronPoints} (<:smallgreenuptriangle:1083528485890445342> +${pointsGained})
-Kills: ${kills} (+${killGain})
-Deaths: ${deaths} (+ ${deathGain})
-K/D: ${kdRatio}
-Players: ${squadronPlayerCount}
-`);
+K/D: ${kdRatio}`,
+        fields: [
+          {
+            name: "",
+            value: "",
+            inline: true,
+          },
+          { name: "Players -----------------", value: "" },
+          {
+            name: "",
+            value: "",
+            inline: true,
+          },
+          ...playersPointChange(),
+        ],
+      };
+      sendMessage(embedObject);
     }
     if (squadronPoints < initialSessionStats.squadronPoints) {
       var pointsLost = initialSessionStats.squadronPoints - squadronPoints;
-      var { killGain, deathGain, kdRatio, calculatedRank } = calculateStats();
-      sendMessage(`#${calculatedRank()} F4WRD 🇺🇸🦅
-Points: ${squadronPoints} (:small_red_triangle_down: -${pointsLost})
-Kills: ${kills} (+${killGain})
-Deaths: ${deaths} (+ ${deathGain})
-K/D: ${kdRatio}
-Players: ${squadronPlayerCount}
-`);
+      var embedObject = {
+        color: "#FF0000",
+        title: `#${calculatedRank()} F4WRD 🇺🇸🦅
+Points: ${squadronPoints} (:small_red_triangle_down: ${pointsLost})
+K/D: ${kdRatio}`,
+        fields: [
+          {
+            name: "",
+            value: "",
+            inline: true,
+          },
+          { name: "Players -----------------", value: "" },
+          {
+            name: "",
+            value: "",
+            inline: true,
+          },
+          ...playersPointChange(),
+        ],
+      };
+      sendMessage(embedObject);
     }
     if (squadronPoints == initialSessionStats.squadronPoints) {
       return;
     }
+
     normalizeUpdatedData();
 
     function calculateStats() {
@@ -194,13 +279,41 @@ Players: ${squadronPlayerCount}
           return rank;
         }
       };
-      return { killGain, deathGain, kdRatio, calculatedRank };
+      var playersPointChange = () => {
+        var playerChangedPoints = [];
+        for (const [
+          playerName,
+          initialPlayerPoints,
+        ] of initialSessionStats.players.entries()) {
+          const updatedPoints = players.get(playerName);
+          if (initialPlayerPoints !== updatedPoints) {
+            const pointsDifference = updatedPoints - initialPlayerPoints;
+            const differenceSymbol =
+              pointsDifference > 0
+                ? "<:smallgreenuptriangle:1083528485890445342>"
+                : ":small_red_triangle_down:";
+            playerChangedPoints.push({
+              name: `${playerName}`,
+              value: `**${updatedPoints} (${differenceSymbol} ${pointsDifference})**`,
+            });
+          }
+        }
+        return playerChangedPoints;
+      };
+      return {
+        killGain,
+        deathGain,
+        kdRatio,
+        calculatedRank,
+        playersPointChange,
+      };
     }
     function normalizeUpdatedData() {
       initialSessionStats.squadronPoints = squadronPoints;
       initialSessionStats.kills = kills;
       initialSessionStats.deaths = deaths;
       initialSessionStats.rank = rank;
+      initialSessionStats.players = players;
     }
   }
   intervalId = setInterval(getUpdatedSquadronStats, 7 * 60 * 1000);
@@ -214,8 +327,11 @@ Players: ${squadronPlayerCount}
 
 const stopScraping = async () => {
   clearInterval(intervalId);
-  console.log(endSessionStats.squadronPoints, initialSessionStats.squadronPoints);
-  if(endSessionStats.squadronPoints > initialSessionStats.squadronPoints) {
+  console.log(
+    endSessionStats.squadronPoints,
+    initialSessionStats.squadronPoints
+  );
+  if (endSessionStats.squadronPoints > initialSessionStats.squadronPoints) {
     var calculatedRank = () => {
       if (endSessionStats.rank > initialSessionStats.rank) {
         return `:small_red_triangle_down: ${rank}`;
@@ -226,12 +342,15 @@ const stopScraping = async () => {
         return initialSessionStats.rank;
       }
     };
-    var pointsGained = endSessionStats.squadronPoints - initialSessionStats.squadronPoints;
+    var pointsGained =
+      endSessionStats.squadronPoints - initialSessionStats.squadronPoints;
     sendMessage(`END OF SESSION
 #${calculatedRank()} F4WRD 🇺🇸🦅
-Points: ${endSessionStats.squadronPoints} (<:smallgreenuptriangle:1083528485890445342> +${pointsGained})
+Points: ${
+      endSessionStats.squadronPoints
+    } (<:smallgreenuptriangle:1083528485890445342> +${pointsGained})
 `);
-console.log("End of session message sent");
+    console.log("End of session message sent");
   }
   if (endSessionStats.squadronPoints < initialSessionStats.squadronPoints) {
     var calculatedRank = () => {
@@ -275,4 +394,3 @@ cron.schedule("0 2 * * *", () => {
   stopScraping();
 });
 startScraping();
-

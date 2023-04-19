@@ -20,11 +20,9 @@ client.once(Events.ClientReady, c => {
     channel.send({ embeds: [embed] });
 }
 
-function sendMessage(message) {
+function sendMessage(embed) {
     const channel = client.channels.cache.get(channelId);
-    const embed = new EmbedBuilder()
-        .setTitle(message)
-        .setColor("#FF0000")
+
     channel.send({ embeds: [embed] });
 }
 

@@ -109,7 +109,7 @@ const startScraping = async () => {
         initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
-  intervalId = setInterval(getUpdatedSquadronStats, 10 * 60 * 1000);
+  intervalId = setInterval(getUpdatedSquadronStats, 15 * 60 * 1000);
 
   async function updateGlobalVariables() {
     initialTopTenSquadPoints = await initialTopTenSquadronPoints();
