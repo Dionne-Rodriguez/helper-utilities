@@ -12,7 +12,6 @@ const startScraping = async () => {
   const initialTopTenSquadronPoints = async () => {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.MACCHROMEPATH,
       slowMo: 1000,
     });
     const page = await browser.newPage();
@@ -51,7 +50,6 @@ const startScraping = async () => {
   async function getUpdatedSquadronStats() {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.MACCHROMEPATH,
       slowMo: 1000,
     });
     const page = await browser.newPage();
