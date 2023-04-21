@@ -11,7 +11,7 @@ const startScraping = async () => {
 
   const initialTopTenSquadronPoints = async () => {
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       executablePath: 'chromium-browser',
       slowMo: 1000,
     });
