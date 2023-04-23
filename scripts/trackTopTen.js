@@ -14,7 +14,6 @@ const startScraping = async () => {
       headless: false,
       executablePath: '/usr/bin/chromium-browser',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      slowMo: 1000,
     });
     const [page] = await browser.pages()
     console.log("page", page);
@@ -59,7 +58,6 @@ const startScraping = async () => {
       headless: false,
       executablePath: '/usr/bin/chromium-browser',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      slowMo: 1000,
     });
     const pages = await browser.pages()
     const page = pages[0]
