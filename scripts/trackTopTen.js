@@ -10,6 +10,7 @@ const startScraping = async () => {
   console.log("Start scraping at:", new Date().toLocaleTimeString("en-US"));
 
   const initialTopTenSquadronPoints = async () => {
+    console.log("launch");
     const browser = await puppeteer.launch({
       headless: false,
       executablePath: '/usr/bin/chromium-browser',
@@ -54,6 +55,7 @@ const startScraping = async () => {
   console.log("Initial value:", initialTopTenSquadPoints);
 
   async function getUpdatedSquadronStats() {
+    console.log("launch");
     const browser = await puppeteer.launch({
       headless: false,
       executablePath: '/usr/bin/chromium-browser',
