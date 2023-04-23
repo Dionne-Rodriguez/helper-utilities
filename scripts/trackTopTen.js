@@ -59,7 +59,8 @@ const startScraping = async () => {
       executablePath: 'chromium-browser',
       slowMo: 1000,
     });
-    const [page] = await browser.pages()
+    const pages = await browser.pages()
+    const page = pages[0]
     await page.setDefaultNavigationTimeout(0);
     await page.goto(URL_LEADERBOARD);
 
