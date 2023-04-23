@@ -10,9 +10,10 @@ const startScraping = async () => {
   const getInitialSquadronData = async () => {
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: 'chromium-browser',
       slowMo: 1000,
     });
-    const page = await browser.newPage();
+    const [page] = await browser.pages()
     await page.setDefaultNavigationTimeout(0);
     await page.goto(
       "https://warthunder.com/en/community/claninfo/COPE--Fight%204%20Whats%20Right%20or%20Die"
@@ -111,9 +112,10 @@ const startScraping = async () => {
   async function getUpdatedSquadronStats() {
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: 'chromium-browser',
       slowMo: 1000,
     });
-    const page = await browser.newPage();
+    const [page] = await browser.pages();
     await page.setDefaultNavigationTimeout(0);
     await page.goto(
       "https://warthunder.com/en/community/claninfo/COPE--Fight%204%20Whats%20Right%20or%20Die"

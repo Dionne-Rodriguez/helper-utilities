@@ -15,9 +15,11 @@ const startScraping = async () => {
       executablePath: 'chromium-browser',
       slowMo: 1000,
     });
-    const page = await browser.newPage();
+    const [page] = await browser.pages()
     await page.setDefaultNavigationTimeout(0);
+    console.log('Going to page');
     await page.goto(URL_LEADERBOARD);
+    console.log('loaded');
 
     var topTenTeamPoints = await page.evaluate(() => {
       var topTenTeams = [];
@@ -30,6 +32,8 @@ const startScraping = async () => {
       return topTenTeams;
     });
     topTenTeamPoints = new Map(topTenTeamPoints);
+
+    console.log('team mapped');
 
     for (const [teamName, teamLink] of topTenTeamPoints.entries()) {
       await page.setDefaultNavigationTimeout(0);
@@ -54,7 +58,7 @@ const startScraping = async () => {
       executablePath: 'chromium-browser',
       slowMo: 1000,
     });
-    const page = await browser.newPage();
+    const [page] = await browser.pages()
     await page.setDefaultNavigationTimeout(0);
     await page.goto(URL_LEADERBOARD);
 
@@ -109,7 +113,7 @@ const startScraping = async () => {
         initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
-  intervalId = setInterval(getUpdatedSquadronStats, 15 * 60 * 1000);
+  intervalId = setInterval(getUpdatedSquadronStats, 10 * 60 * 1000);
 
   async function updateGlobalVariables() {
     initialTopTenSquadPoints = await initialTopTenSquadronPoints();
@@ -126,6 +130,7 @@ const stopScraping = async () => {
 cron.schedule("0 10,21 * * *", () => {
   startScraping();
 });
+startScraping();
 
 cron.schedule("0 18,2 * * *", () => {
   stopScraping();
