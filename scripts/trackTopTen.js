@@ -12,7 +12,8 @@ const startScraping = async () => {
   const initialTopTenSquadronPoints = async () => {
     const browser = await puppeteer.launch({
       headless: false,
-      executablePath: 'chromium-browser',
+      executablePath: '/usr/bin/chromium-browser',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
       slowMo: 1000,
     });
     const [page] = await browser.pages()
@@ -56,7 +57,8 @@ const startScraping = async () => {
   async function getUpdatedSquadronStats() {
     const browser = await puppeteer.launch({
       headless: false,
-      executablePath: 'chromium-browser',
+      executablePath: '/usr/bin/chromium-browser',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
       slowMo: 1000,
     });
     const pages = await browser.pages()
