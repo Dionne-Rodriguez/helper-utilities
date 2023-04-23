@@ -17,7 +17,7 @@ const startScraping = async () => {
     });
     const [page] = await browser.pages()
     console.log("page", page);
-    await page.setDefaultNavigationTimeout(0);
+    // await page.setDefaultNavigationTimeout(0);
     console.log('Going to page');
     await page.goto("https://warthunder.com/en/community/clansleaderboard/");
     console.log('loaded');
@@ -37,7 +37,7 @@ const startScraping = async () => {
     console.log('team mapped');
 
     for (const [teamName, teamLink] of topTenTeamPoints.entries()) {
-      await page.setDefaultNavigationTimeout(0);
+     // await page.setDefaultNavigationTimeout(0);
       await page.goto(teamLink);
 
       var squadronPoints = await page.evaluate(() => {
@@ -62,7 +62,7 @@ const startScraping = async () => {
     });
     const pages = await browser.pages()
     const page = pages[0]
-    await page.setDefaultNavigationTimeout(0);
+   // await page.setDefaultNavigationTimeout(0);
     await page.goto("https://warthunder.com/en/community/clansleaderboard/");
 
     var topTenTeamPoints = await page.evaluate(() => {
@@ -78,7 +78,7 @@ const startScraping = async () => {
     topTenTeamPoints = new Map(topTenTeamPoints);
 
     for (const [teamName, teamLink] of topTenTeamPoints.entries()) {
-      await page.setDefaultNavigationTimeout(0);
+     // await page.setDefaultNavigationTimeout(0);
       await page.goto(teamLink);
 
       var squadronPoints = await page.evaluate(() => {
