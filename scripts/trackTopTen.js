@@ -16,6 +16,7 @@ const startScraping = async () => {
       slowMo: 1000,
     });
     const [page] = await browser.pages()
+    console.log("page", page);
     await page.setDefaultNavigationTimeout(0);
     console.log('Going to page');
     await page.goto(URL_LEADERBOARD);
@@ -130,7 +131,7 @@ const stopScraping = async () => {
 cron.schedule("0 10,21 * * *", () => {
   startScraping();
 });
-startScraping();
+
 
 cron.schedule("0 18,2 * * *", () => {
   stopScraping();
@@ -142,4 +143,4 @@ cron.schedule("0 18,2 * * *", () => {
 
 
   
-  // startScraping();
+startScraping();
