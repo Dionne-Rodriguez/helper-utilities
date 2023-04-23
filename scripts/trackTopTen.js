@@ -2,7 +2,7 @@ import {sendTopTenMessage} from "../discord/CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
-const URL_LEADERBOARD = "https://warthunder.com/en/community/clansleaderboard/";
+const "https://warthunder.com/en/community/clansleaderboard/" = "https://warthunder.com/en/community/clansleaderboard/";
 
 var intervalId, initialTopTenSquadPoints, finalTopTenSquadPoints;
 
@@ -20,7 +20,7 @@ const startScraping = async () => {
     console.log("page", page);
     await page.setDefaultNavigationTimeout(0);
     console.log('Going to page');
-    await page.goto(URL_LEADERBOARD);
+    await page.goto("https://warthunder.com/en/community/clansleaderboard/");
     console.log('loaded');
 
     var topTenTeamPoints = await page.evaluate(() => {
@@ -64,7 +64,7 @@ const startScraping = async () => {
     const pages = await browser.pages()
     const page = pages[0]
     await page.setDefaultNavigationTimeout(0);
-    await page.goto(URL_LEADERBOARD);
+    await page.goto("https://warthunder.com/en/community/clansleaderboard/");
 
     var topTenTeamPoints = await page.evaluate(() => {
       var topTenTeams = [];
