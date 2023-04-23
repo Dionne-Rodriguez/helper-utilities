@@ -2,7 +2,6 @@ import {sendTopTenMessage} from "../discord/CopeDiscordBot.js";
 import puppeteer from "puppeteer";
 import cron from "node-cron";
 
-const "https://warthunder.com/en/community/clansleaderboard/" = "https://warthunder.com/en/community/clansleaderboard/";
 
 var intervalId, initialTopTenSquadPoints, finalTopTenSquadPoints;
 
