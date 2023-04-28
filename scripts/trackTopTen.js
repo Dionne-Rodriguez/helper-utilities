@@ -12,7 +12,7 @@ const startScraping = async () => {
   const initialTopTenSquadronPoints = async () => {
     const browser = await puppeteer.launch({
       headless: false,
-      executablePath: 'chromium-browser',
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       slowMo: 1000,
     });
     const [page] = await browser.pages();
@@ -51,7 +51,7 @@ const startScraping = async () => {
   async function getUpdatedSquadronStats() {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: 'chromium-browser',
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       slowMo: 1000,
     });
     const page = await browser.newPage();
@@ -129,12 +129,5 @@ cron.schedule("0 10,21 * * *", () => {
 
 cron.schedule("0 18,2 * * *", () => {
   stopScraping();
-});
-
-
-
-
-
-
-  
-  // startScraping();
+});  
+  startScraping();
