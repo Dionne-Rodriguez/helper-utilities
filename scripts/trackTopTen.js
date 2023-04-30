@@ -11,7 +11,7 @@ const startScraping = async () => {
 
   const initialTopTenSquadronPoints = async () => {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       slowMo: 1000,
     });
@@ -40,7 +40,8 @@ const startScraping = async () => {
           document.querySelector(".squadrons-counter__value").innerHTML.trim()
         );
       });
-      topTenTeamPoints.set(teamName, squadronPoints);
+      topTenTeamPoints.set(teamName, {squadronPoints,
+      netPoints:0});
     }
     return topTenTeamPoints;
   };
@@ -88,18 +89,23 @@ const startScraping = async () => {
     let changesMessage = "";
     let changesDetected = false
 
-    for (const [teamName, initialPoints] of initialTopTenSquadPoints.entries()) {
+    for (var [teamName, {squadronPoints, netPoints}] of initialTopTenSquadPoints.entries()) {
         const updatedPoints = topTenTeamPoints.get(teamName);
-        if (initialPoints !== updatedPoints) {
+        // console.log(squadronPoints,netPoints,"LOG");
+        if (squadronPoints !== updatedPoints) {
             changesDetected = true;
-            const pointsDifference = updatedPoints - initialPoints;
+            console.log(teamName, netPoints, "calculated net points");
+            const pointsDifference = updatedPoints - squadronPoints;
+            netPoints += pointsDifference
             const differenceSymbol = pointsDifference > 0 ? "<:smallgreenuptriangle:1083528485890445342>" : ":small_red_triangle_down:";
-            changesMessage += `${teamName}: ${updatedPoints} (${differenceSymbol}${pointsDifference})\n`;
+            changesMessage += `TEST ${teamName}: ${updatedPoints} (${differenceSymbol}${pointsDifference} ${netPoints})\n`;
+            //other way to normalize?
+            squadronPoints = updatedPoints
         }
     }
 
     if (changesDetected) {
-        sendTopTenMessage(changesMessage);
+       sendTopTenMessage(changesMessage);
     }
 
     normalizeUpdatedData();
@@ -109,7 +115,7 @@ const startScraping = async () => {
         initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
-  intervalId = setInterval(getUpdatedSquadronStats, 15 * 60 * 1000);
+  intervalId = setInterval(getUpdatedSquadronStats, 1 * 60 * 1000);
 
   async function updateGlobalVariables() {
     initialTopTenSquadPoints = await initialTopTenSquadronPoints();
