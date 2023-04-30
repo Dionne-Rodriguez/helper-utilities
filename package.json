@@ -9,7 +9,7 @@
     "speed": "node ./Speed-Warning.js",
     "localTracker": "node ./trackSQBGames.js",
     "pointTracker": "caffeinate node ./scripts/trackPrimary.js",
-    "topTenTracker": "node ./scripts/trackTopTen.js",
+    "topTenTracker": "caffeinate node ./scripts/trackTopTen.js",
     "gameLogger": "caffeinate node ./scripts/gameLogger.js"
   },
   "author": "",
