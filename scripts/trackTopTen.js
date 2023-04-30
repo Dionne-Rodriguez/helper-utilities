@@ -21,7 +21,7 @@ const startScraping = async () => {
 
     var topTenTeamPoints = await page.evaluate(() => {
       var topTenTeams = [];
-      for (let i = 1; i < 16; i++) {
+      for (let i = 1; i < 12; i++) {
         topTenTeams.push([
           document.querySelectorAll("tr")[i].childNodes[0].innerText.split(" ")[0].concat(" ", document.querySelectorAll("tr")[i].childNodes[1].innerText.split(" ")[0]),
           document.querySelectorAll("tr")[i].childNodes[1].firstChild.href,
@@ -40,7 +40,7 @@ const startScraping = async () => {
           document.querySelector(".squadrons-counter__value").innerHTML.trim()
         );
       });
-      topTenTeamPoints.set(teamName, {squadronPoints, netPoints: 0});
+      topTenTeamPoints.set(teamName, squadronPoints);
     }
     return topTenTeamPoints;
   };
@@ -90,8 +90,7 @@ const startScraping = async () => {
 
     for (const [teamName, initialPoints] of initialTopTenSquadPoints.entries()) {
         const updatedPoints = topTenTeamPoints.get(teamName);
-        console.log( "OBJECT",initialPoints);
-        if (initialPoints.squadronPoints !== updatedPoints) {
+        if (initialPoints !== updatedPoints) {
             changesDetected = true;
             const pointsDifference = updatedPoints - initialPoints;
             const differenceSymbol = pointsDifference > 0 ? "<:smallgreenuptriangle:1083528485890445342>" : ":small_red_triangle_down:";
@@ -107,7 +106,6 @@ const startScraping = async () => {
 
     function normalizeUpdatedData() {
         changesDetected = false
-
         initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
@@ -121,7 +119,6 @@ const startScraping = async () => {
 
 const stopScraping = async () => {
     clearInterval(intervalId);
-
     console.log("Stop scraping at:", new Date().toLocaleTimeString("en-US"));
   };
 
