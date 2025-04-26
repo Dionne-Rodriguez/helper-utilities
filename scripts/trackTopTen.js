@@ -13,15 +13,16 @@ const startScraping = async () => {
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      slowMo: 1000,
+      slowMo: 2000,
     });
     const [page] = await browser.pages();
     await page.setDefaultNavigationTimeout(0);
-    await page.goto(URL_LEADERBOARD);
+    await page.goto(URL_LEADERBOARD,{waitUntil: "domcontentloaded"});
+
 
     var topTenTeamPoints = await page.evaluate(() => {
       var topTenTeams = [];
-      for (let i = 1; i < 12; i++) {
+      for (let i = 1; i < 16; i++) {
         topTenTeams.push([
           document.querySelectorAll("tr")[i].childNodes[0].innerText.split(" ")[0].concat(" ", document.querySelectorAll("tr")[i].childNodes[1].innerText.split(" ")[0]),
           document.querySelectorAll("tr")[i].childNodes[1].firstChild.href,
@@ -33,7 +34,7 @@ const startScraping = async () => {
 
     for (const [teamName, teamLink] of topTenTeamPoints.entries()) {
       await page.setDefaultNavigationTimeout(0);
-      await page.goto(teamLink);
+      await page.goto(teamLink,{waitUntil: "domcontentloaded"});
 
       var squadronPoints = await page.evaluate(() => {
         return parseInt(
@@ -52,15 +53,16 @@ const startScraping = async () => {
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      slowMo: 1000,
+      slowMo: 2000,
     });
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0);
-    await page.goto(URL_LEADERBOARD);
+    await page.goto(URL_LEADERBOARD,{waitUntil: "domcontentloaded"});
+
 
     var topTenTeamPoints = await page.evaluate(() => {
       var topTenTeams = [];
-      for (let i = 1; i < 11; i++) {
+      for (let i = 1; i < 16; i++) {
         topTenTeams.push([
           document.querySelectorAll("tr")[i].childNodes[0].innerText.split(" ")[0].concat(" ", document.querySelectorAll("tr")[i].childNodes[1].innerText.split(" ")[0]),
           document.querySelectorAll("tr")[i].childNodes[1].firstChild.href,
@@ -70,9 +72,9 @@ const startScraping = async () => {
     });
     topTenTeamPoints = new Map(topTenTeamPoints);
 
-    for (const [teamName, teamLink] of topTenTeamPoints.entries()) {
+    for await (const [teamName, teamLink] of topTenTeamPoints.entries()) {
       await page.setDefaultNavigationTimeout(0);
-      await page.goto(teamLink);
+      await page.goto(teamLink,{waitUntil: "domcontentloaded"});
 
       var squadronPoints = await page.evaluate(() => {
         return parseInt(
@@ -82,7 +84,6 @@ const startScraping = async () => {
       topTenTeamPoints.set(teamName, squadronPoints);
     }
 
-    console.log("Updated value:", topTenTeamPoints);
     await browser.close();
 
     let changesMessage = "";
@@ -109,7 +110,7 @@ const startScraping = async () => {
         initialTopTenSquadPoints = topTenTeamPoints;
     }
   }
-  intervalId = setInterval(getUpdatedSquadronStats, 15 * 60 * 1000);
+  intervalId = setInterval(getUpdatedSquadronStats, 10 * 60 * 1000);
 
   async function updateGlobalVariables() {
     initialTopTenSquadPoints = await initialTopTenSquadronPoints();

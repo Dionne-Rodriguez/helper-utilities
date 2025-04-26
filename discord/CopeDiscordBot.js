@@ -5,13 +5,14 @@ dotenv.config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const token = process.env.TOKEN;
 const channelId = process.env.CHANNELID;
+const leaderBoardChannelId = process.env.LEADERBOARD_CHANNEL_ID;
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
  function sendTopTenMessage(message) {
-    const channel = client.channels.cache.get(channelId);
+    const channel = client.channels.cache.get(leaderBoardChannelId);
     const embed = new EmbedBuilder()
     .setColor("#0099ff")
     .setTitle("Squadron points changes detected")
