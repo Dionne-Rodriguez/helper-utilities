@@ -22,7 +22,7 @@ client.on("error", (error) => {
 
 const token = process.env.TOKEN;
 const channelId = process.env.CHANNELID;
-const voiceChannelId = "1160664568494821451"; // Your VC
+const voiceChannelId = process.env.VOICECHANNELID;
 
 let scrimPostWeek = null; // 🆕 Track ISO week of scrim post
 let messageId = null; // Save scrim check message ID
@@ -76,7 +76,7 @@ async function postNewScrimInterest() {
       .unix();
 
     const embed = new EmbedBuilder()
-      .setTitle("In-house Scrims Interest Check 🕐")
+      .setTitle("In-house Scrims Interest Check 📝")
       .setDescription(
         `Weekly in-house scrims at <t:${timestamp18UTC}:t> (**18:00 UTC**).\n` +
           `React to the number for the day you're available!\nSession happens if 8 or more react.\n\n` +
