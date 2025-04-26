@@ -1,6 +1,8 @@
 import { Client, Events, GatewayIntentBits, EmbedBuilder } from "discord.js";
 import moment from "moment";
 import dotenv from "dotenv";
+import cron from "node-cron";
+
 dotenv.config();
 
 const client = new Client({
@@ -22,8 +24,9 @@ const token = process.env.TOKEN;
 const channelId = process.env.CHANNELID;
 const voiceChannelId = "1160664568494821451"; // Your VC
 
+let scrimPostWeek = null; // 🆕 Track ISO week of scrim post
 let messageId = null; // Save scrim check message ID
-const eventCreated = {}; // Track which day events are already created
+let eventCreated = {}; // Track if event already created for a day
 
 const numberEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
 const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday"];
@@ -31,27 +34,55 @@ const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday"];
 client.once(Events.ClientReady, async (c) => {
   console.log(`✅ Ready! Logged in as ${c.user.tag}`);
 
-  const today = moment.utc();
-  const timestamp18UTC = today
-    .clone()
-    .set({ hour: 18, minute: 0, second: 0, millisecond: 0 })
-    .unix();
+  scrimPostWeek = moment.utc().isoWeek(); // 🆕 Set current week on boot
 
-  const embed = new EmbedBuilder()
-    .setTitle("In-house Scrims Interest Check 🕐")
-    .setDescription(
-      `Weekly in-house scrims at <t:${timestamp18UTC}:t> (**18:00 UTC**).\n` +
-        `React to the number for the day you're available!\nSession happens if 8 or more react.\n\n` +
-        `1️⃣ Monday\n2️⃣ Tuesday\n3️⃣ Wednesday\n4️⃣ Thursday`
-    )
-    .setColor(0x00ff00);
+  const currentWeek = moment.utc().isoWeek();
 
+  if (scrimPostWeek !== currentWeek) {
+    console.log("🛡 Missed scrim post for this week. Posting now...");
+    await postNewScrimInterest();
+  } else {
+    console.log("✅ Scrim post already made for this week.");
+  }
+
+  // ⏰ Schedule to run every Sunday at 12:00 UTC
+  cron.schedule("0 12 * * 0", async () => {
+    console.log("🗓 It's Sunday! Posting new In-house Scrims Interest Check...");
+    await postNewScrimInterest();
+  });
+});
+
+async function postNewScrimInterest() {
   try {
     const channel = await client.channels.fetch(channelId);
+
     if (!channel || !channel.isTextBased()) {
       console.error("❌ Channel not found or not text-based!");
       return;
     }
+
+    // Reset globals
+    for (const emoji of numberEmojis) {
+      eventCreated[emoji] = false;
+    }
+    messageId = null;
+
+    const today = moment.utc();
+    scrimPostWeek = today.isoWeek(); // Update week after posting
+
+    const timestamp18UTC = today
+      .clone()
+      .set({ hour: 18, minute: 0, second: 0, millisecond: 0 })
+      .unix();
+
+    const embed = new EmbedBuilder()
+      .setTitle("In-house Scrims Interest Check 🕐")
+      .setDescription(
+        `Weekly in-house scrims at <t:${timestamp18UTC}:t> (**18:00 UTC**).\n` +
+          `React to the number for the day you're available!\nSession happens if 8 or more react.\n\n` +
+          `1️⃣ Monday\n2️⃣ Tuesday\n3️⃣ Wednesday\n4️⃣ Thursday`
+      )
+      .setColor(0x00ff00);
 
     const message = await channel.send({ embeds: [embed] });
     messageId = message.id;
@@ -60,11 +91,11 @@ client.once(Events.ClientReady, async (c) => {
       await message.react(emoji);
     }
 
-    console.log("✅ Scrim check posted successfully!");
+    console.log("✅ New scrim check posted!");
   } catch (error) {
-    console.error("❌ Failed to fetch channel or send message:", error);
+    console.error("❌ Failed to post new scrim check:", error);
   }
-});
+}
 
 client.on("messageReactionAdd", async (reaction, user) => {
   if (user.bot) return;
@@ -83,6 +114,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
     const emojiIndex = numberEmojis.indexOf(reaction.emoji.name);
 
     if (count >= 9 && !eventCreated[reaction.emoji.name]) {
+      // ✅ Correct threshold = 8
       eventCreated[reaction.emoji.name] = true;
 
       const dayName = dayNames[emojiIndex];
@@ -94,7 +126,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
       const todayDayIndex = today.isoWeekday(); // Monday = 1, Sunday = 7
       let targetDayIndex = emojiIndex + 1; // 1️⃣ Monday = 1
       let daysToAdd = targetDayIndex - todayDayIndex;
-      if (daysToAdd < 0) daysToAdd += 7; // If already passed, move to next week
+      if (daysToAdd < 0) daysToAdd += 7; // If already passed, schedule for next week
 
       const eventMoment = today
         .clone()
@@ -102,7 +134,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
         .set({ hour: 18, minute: 0, second: 0, millisecond: 0 });
 
       // Create the voice channel event
-      const createdEvent = await guild.scheduledEvents.create({
+      await guild.scheduledEvents.create({
         name: `4v4 Jetstrike Scrims - ${dayName}`,
         scheduledStartTime: eventMoment.toDate(),
         privacyLevel: 2, // GUILD_ONLY
@@ -116,10 +148,6 @@ client.on("messageReactionAdd", async (reaction, user) => {
       // Set up reminder
       const reminderMoment = eventMoment.clone().subtract(15, "minutes");
       const timeUntilReminder = reminderMoment.diff(moment.utc());
-
-      // Test reminder message config
-      //   const reminderMoment = moment.utc().add(30, "seconds"); // 🆕 30 seconds from now
-      //   const timeUntilReminder = reminderMoment.diff(moment.utc());
 
       if (timeUntilReminder > 0) {
         console.log(
@@ -151,8 +179,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
             const mentions = nonBotUsers.map((u) => `<@${u.id}>`).join(" ");
 
             await channel.send(
-              `⏰ **Reminder!** In-house scrims for **${dayName}** start in 15 minutes!\n` +
-                `${mentions}`
+              `⏰ **Reminder!** In-house scrims for **${dayName}** start in 15 minutes!\n${mentions}`
             );
 
             console.log(`✅ Reminder sent for ${dayName}!`);
